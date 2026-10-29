@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>HTML conectado ao Python</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f4f4f4;
+        }
+
+        section {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        button {
+            cursor: pointer;
+        }
+
+        #resultado {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Meu site com Python</h1>
+
+    <section>
+        <h2>Executar uma função Python</h2>
+
+        <button onclick="mostrarMensagem()">
+            Executar Python
+        </button>
+    </section>
+
+    <section>
+        <h2>Somar números com Python</h2>
+
+        <input
+            type="number"
+            id="numero1"
+            placeholder="Primeiro número"
+            step="any"
+        >
+
+        <br>
+
+        <input
+            type="number"
+            id="numero2"
+            placeholder="Segundo número"
+            step="any"
+        >
+
+        <br>
+
+        <button onclick="somarNumeros()">
+            Somar
+        </button>
+    </section>
+
+    <p id="resultado">O resultado aparecerá aqui.</p>
+
+    <script>
+        async function mostrarMensagem() {
+            try {
+                const resposta = await fetch("/mensagem", {
+                    method: "POST"
+                });
+
+                const dados = await resposta.json();
+
+                document.getElementById("resultado").textContent =
+                    dados.resultado;
+            } catch (erro) {
+                document.getElementById("resultado").textContent =
+                    "Não foi possível conectar ao Python.";
+            }
+        }
+
+        async function somarNumeros() {
+            const numero1 = document.getElementById("numero1").value;
+            const numero2 = document.getElementById("numero2").value;
+
+            if (numero1.trim() === "" || numero2.trim() === "") {
+                document.getElementById("resultado").textContent =
+                    "Preencha os dois números.";
+                return;
+            }
+
+            try {
+                const resposta = await fetch("/somar", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        numero1: numero1,
+                        numero2: numero2
+                    })
+                });
+
+                const dados = await resposta.json();
+
+                if (!resposta.ok) {
+                    throw new Error(dados.erro || "Erro no cálculo.");
+                }
+
+                document.getElementById("resultado").textContent =
+                    "Resultado: " + dados.resultado;
+            } catch (erro) {
+                document.getElementById("resultado").textContent =
+                    erro.message || "Erro ao conectar ao Python.";
+            }
+        }
+    </script>
+</body>
+</html>
